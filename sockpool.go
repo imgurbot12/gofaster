@@ -13,6 +13,8 @@ import (
 
 /***Variables***/
 
+//TODO: add auto-date addition in default headers + re-do no headers benchmark for gofast without headers
+
 //sockPool : object to maintain and create socket threads to handle inbound connections
 type sockPool struct {
 	waitGroup sync.WaitGroup // isRunning: used to stop listener threads after they have been spawned
