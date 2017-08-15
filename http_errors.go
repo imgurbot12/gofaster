@@ -7,11 +7,11 @@ var _404 = []byte("<html>\r\n<head><title>404 Not Found</title></head>\r\n<body 
 /***Functions***/
 
 //errorHandler : base error handler that then responds with the best response accordingly
-func errorHandler(err string, response *Response) {
+func errorHandler(err int64, response *Response) {
 	switch err {
-	case "Bad Request":
+	case 400:
 		badRequest(response)
-	case "404":
+	case 404:
 		request404(response)
 	}
 }

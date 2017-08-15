@@ -84,7 +84,7 @@ func (m *muxer) serve(req *Request, resp *Response) {
 	if handler != nil {
 		handler(req, resp)
 	} else {
-		errorHandler("404", resp)
+		errorHandler(404, resp)
 	}
 }
 
