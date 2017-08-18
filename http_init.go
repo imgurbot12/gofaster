@@ -78,7 +78,7 @@ var allStatusCodes = map[int64][]byte{
 
 //GetDate : get current date date (w/ format for http requests)
 func GetDate() string {
-	return time.Now().Format(timeFormat)
+	return AproxTimeNow().Format(timeFormat)
 }
 
 //ListenAndServe : serve server FOREVER! (A Really Long Time...)

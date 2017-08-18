@@ -13,11 +13,13 @@ import (
 
 /***Variables***/
 
-//TODO: add auto-date addition in default headers + re-do no headers benchmark for gofast without headers
+//TODO: allow for http/1.0 vs http/1.1 response
+//TODO: extra requests are not handled by super fast sockets, they are handled via fasthttp.Server.serveConn
 
 //sockPool : object to maintain and create socket threads to handle inbound connections
 type sockPool struct {
-	waitGroup sync.WaitGroup // isRunning: used to stop listener threads after they have been spawned
+	waitGroup  sync.WaitGroup // isRunning: used to stop listener threads after they have been spawned
+	readerPool sync.Pool
 }
 
 /***Methods***/
@@ -52,8 +54,9 @@ func (s *sockPool) listen(network, address string, handler func(*Request, *Respo
 		conn net.Conn
 		//deadline for rw on socket (adds connection timeout)
 		deadline = 5 * time.Second
-		//buffer object reused for reading requests
+		//buffer objects reused for reading requests
 		sBuffer = &textproto.Reader{}
+		bBuffer = &bufio.Reader{}
 		//requst object reused for every request
 		request = Request{
 			sBuffer: sBuffer,
@@ -67,11 +70,12 @@ func (s *sockPool) listen(network, address string, handler func(*Request, *Respo
 	for {
 		// accept conection and set deadline
 		conn, err = ln.Accept()
-		conn.SetDeadline(time.Now().Add(deadline))
+		conn.SetDeadline(AproxTimeNow().Add(deadline))
 		// handle connection
 		if err == nil {
 			// make buffers
-			request.sBuffer.R = bufio.NewReader(conn)
+			bBuffer.Reset(conn)
+			request.sBuffer.R = bBuffer
 			// parse request
 			err = request.parseRequest()
 			// send request to appropriate handlers
@@ -86,10 +90,27 @@ func (s *sockPool) listen(network, address string, handler func(*Request, *Respo
 			response = Response{
 				statusCode: 200,
 			}
+			// s.putReader(request.sBuffer.R)
 		}
 		//close connection
 		conn.Close()
 	}
+}
+
+//(*sockPool).getReader : return bufio.Reader instance for use in request handler
+func (s *sockPool) getReader(c net.Conn) *bufio.Reader {
+	v := s.readerPool.Get()
+	if v == nil {
+		return bufio.NewReader(c)
+	}
+	r := v.(*bufio.Reader)
+	r.Reset(c)
+	return r
+}
+
+//(*sockPool).putReader : return bufio.Reader instance to readerPool
+func (s *sockPool) putReader(b *bufio.Reader) {
+	s.readerPool.Put(b)
 }
 
 //(*sockPool).Stop : halts all current socket workers
