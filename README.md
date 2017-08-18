@@ -1,7 +1,7 @@
 # gofaster
 A Micro-Web-Framework Designed to Support Headers
 
-Many of the existing web-frameworks serve as an extension of net/http or utilize fasthttp
+Many of the existing web-frameworks serve as an extension of net/http or utilize fasthttp and
 both of which seem to **choke** when dealing with a lot of additional headers
 
 * **FastHttp looses x3 it's speed after adding 4 headers to every request**
