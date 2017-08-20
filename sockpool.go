@@ -56,7 +56,6 @@ func (s *sockPool) listen(network, address string, handler func(*Request, *Respo
 		deadline = 5 * time.Second
 		//buffer objects reused for reading requests
 		sBuffer = &textproto.Reader{}
-		bBuffer = &bufio.Reader{}
 		//requst object reused for every request
 		request = Request{
 			sBuffer: sBuffer,
@@ -74,8 +73,7 @@ func (s *sockPool) listen(network, address string, handler func(*Request, *Respo
 		// handle connection
 		if err == nil {
 			// make buffers
-			bBuffer.Reset(conn)
-			request.sBuffer.R = bBuffer
+			request.sBuffer.R = bufio.NewReader(conn)
 			// parse request
 			err = request.parseRequest()
 			// send request to appropriate handlers
