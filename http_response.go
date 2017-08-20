@@ -105,8 +105,6 @@ func (r *Response) Make(conn net.Conn) {
 		r.tbuffer = append(r.tbuffer[:0], 'H', 'T', 'T', 'P', '/', '1', '.', '1', ' ')
 		r.tbuffer = append(r.tbuffer, strconv.FormatInt(r.statusCode, 10)...)
 		r.tbuffer = append(r.tbuffer, r.message...)
-		// write given headers to tbuffer
-		r.tbuffer = append(r.tbuffer, r.headers.Bytes()...)
 		// write missing headers to tbuffer
 		if !r.bContentType {
 			r.tbuffer = append(r.tbuffer, "Content-Type"...)
@@ -126,7 +124,8 @@ func (r *Response) Make(conn net.Conn) {
 			r.tbuffer = append(r.tbuffer, "Close"...)
 			r.tbuffer = append(r.tbuffer, '\r', '\n')
 		}
-		// end headers with '\r\n'
+		// write given headers to tbuffer
+		r.tbuffer = append(r.tbuffer, r.headers.Bytes()...)
 		r.tbuffer = append(r.tbuffer, '\r', '\n')
 		// write body to tbuffer
 		r.tbuffer = append(r.tbuffer, r.body...)
