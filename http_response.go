@@ -8,9 +8,6 @@ import (
 
 /***Variables***/
 
-//TODO: Make() -> Make(conn)
-//TODO: headers []byte -> headers bytes.Buffer
-
 //TODO: may want to reacreate readmimeheader someotherway
 
 //Response : custom http response object used to handle requests
