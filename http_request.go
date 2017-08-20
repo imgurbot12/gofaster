@@ -68,10 +68,8 @@ func parseHTTPVersion(version string) bool {
 func (req *Request) parseRequest() error {
 	//temporary varaibles
 	var ok bool
-	var err error
-	var line string
 	//attempt to read first line of request
-	line, err = req.sBuffer.ReadLine()
+	line, err := req.sBuffer.ReadLine()
 	if err != nil {
 		return &badRequestError{"Buffer Readline Error!", line}
 	}
