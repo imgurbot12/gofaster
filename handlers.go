@@ -75,7 +75,6 @@ func EtagHandler(handler func(*Request, *Response)) func(*Request, *Response) {
 //ServeFile : serves static file content to
 func ServeFile(fname string) func(*Request, *Response) {
 	//variables
-	var err error
 	var mimetype string
 	var lastmodified string
 
@@ -91,7 +90,7 @@ func ServeFile(fname string) func(*Request, *Response) {
 
 	// generate function
 	return func(req *Request, resp *Response) {
-		content, _ := ioutil.ReadFile(fname)
+		content, err := ioutil.ReadFile(fname)
 		if err == nil {
 			resp.SetHeader("Server", "nginx")
 			resp.SetHeader("Date", GetDate())
@@ -107,9 +106,10 @@ func ServeFile(fname string) func(*Request, *Response) {
 }
 
 func ServeDir(dname string) func(*Request, *Response) {
-	//collect stats and confirm is-dir
+	// collect stats and confirm is-dir
 	statFile(dname, true)
 	files := walkDir(dname)
+	// create muxer for all files given
 	mux := NewServeMux()
 	for _, fname := range files {
 		mux.HandleFunc("/"+fname, ServeFile(fname))
@@ -122,6 +122,7 @@ func StripPrefix(prefix string, handler func(*Request, *Response)) func(*Request
 	if prefix == "" {
 		return handler
 	}
+	// create handler to trip the prefix before running handler
 	return func(req *Request, resp *Response) {
 		req.RequestURI = strings.TrimPrefix(req.RequestURI, prefix)
 		handler(req, resp)
