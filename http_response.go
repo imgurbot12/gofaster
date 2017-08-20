@@ -23,6 +23,7 @@ type Response struct {
 
 	//status objects
 	bIsRaw         bool //turns off status and headers if true to leave raw body
+	bConnClose     bool //determines if you connection should be set
 	bContentType   bool //determines if content-type has been declared
 	bContentLength bool //determines if content-length has been declared
 
@@ -40,6 +41,8 @@ func (r *Response) checkHeaders(key string) {
 		r.bContentType = true
 	} else if key == "Content-Length" {
 		r.bContentLength = true
+	} else if key == "Connection" {
+		r.bConnClose = true
 	}
 }
 
@@ -98,18 +101,30 @@ func (r *Response) Make(conn net.Conn) {
 		if r.message, r.ok = commonStatusCodes[r.statusCode]; !r.ok {
 			r.message = allStatusCodes[r.statusCode]
 		}
-		// attempt to find content-type/content-length
-		if !r.bContentType {
-			r.SetHeader("Content-Type", "text/plain")
-		}
-		if !r.bContentLength {
-			r.SetHeader("Content-Length", strconv.Itoa(len(r.body)))
-		}
 		// write status to tbuffer
 		r.tbuffer = append(r.tbuffer[:0], 'H', 'T', 'T', 'P', '/', '1', '.', '1', ' ')
 		r.tbuffer = append(r.tbuffer, strconv.FormatInt(r.statusCode, 10)...)
 		r.tbuffer = append(r.tbuffer, r.message...)
-		// write headers to tbuffer
+		// write missing headers to tbuffer
+		if !r.bContentType {
+			r.tbuffer = append(r.tbuffer, "Content-Type"...)
+			r.tbuffer = append(r.tbuffer, ':', ' ')
+			r.tbuffer = append(r.tbuffer, "text/plain"...)
+			r.tbuffer = append(r.tbuffer, '\r', '\n')
+		}
+		if !r.bContentLength {
+			r.tbuffer = append(r.tbuffer, "Content-Length"...)
+			r.tbuffer = append(r.tbuffer, ':', ' ')
+			r.tbuffer = append(r.tbuffer, strconv.Itoa(len(r.body))...)
+			r.tbuffer = append(r.tbuffer, '\r', '\n')
+		}
+		if !r.bConnClose {
+			r.tbuffer = append(r.tbuffer, "Connection"...)
+			r.tbuffer = append(r.tbuffer, ':', ' ')
+			r.tbuffer = append(r.tbuffer, "Close"...)
+			r.tbuffer = append(r.tbuffer, '\r', '\n')
+		}
+		// write given headers to tbuffer
 		r.tbuffer = append(r.tbuffer, r.headers.Bytes()...)
 		r.tbuffer = append(r.tbuffer, '\r', '\n')
 		// write body to tbuffer
