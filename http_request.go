@@ -115,10 +115,10 @@ func (req *Request) ParseForm() error {
 		return &badRequestError{"Not a POST Request!", req.Method}
 	}
 	// attempt to read-data
-	len, err := req.sBuffer.R.Read(buf)
+	l, err := req.sBuffer.R.Read(buf)
 	// if line is read -> parse-query
 	if err == nil {
-		req.Form, err = url.ParseQuery(string(buf[:len]))
+		req.Form, err = url.ParseQuery(string(buf[:l]))
 	}
 	return err
 }
