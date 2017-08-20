@@ -18,8 +18,14 @@ import (
 
 //sockPool : object to maintain and create socket threads to handle inbound connections
 type sockPool struct {
-	waitGroup  sync.WaitGroup // isRunning: used to stop listener threads after they have been spawned
-	readerPool sync.Pool
+	waitGroup sync.WaitGroup // isRunning: used to stop listener threads after they have been spawned
+}
+
+//cfg : tcp listener with global configuration options
+var cfg = &tcplisten.Config{
+	ReusePort:   true,
+	DeferAccept: true,
+	FastOpen:    true,
 }
 
 /***Methods***/
@@ -34,13 +40,7 @@ func (s *sockPool) Spawn(network, address string, n int, handler func(*Request, 
 
 //(*sockPool).listen : spawn socket and send inbound connections to queue
 func (s *sockPool) listen(network, address string, handler func(*Request, *Response)) {
-	//build config for tcp-listener
-	cfg := &tcplisten.Config{
-		ReusePort:   true,
-		DeferAccept: true,
-		FastOpen:    true,
-	}
-	// open listener
+	// open listener using config
 	ln, err := cfg.NewListener(network, address)
 	if err != nil {
 		log.Fatalf("- Socket FAILED TO INIT! Error: %s\n", err)
@@ -93,22 +93,6 @@ func (s *sockPool) listen(network, address string, handler func(*Request, *Respo
 		//close connection
 		conn.Close()
 	}
-}
-
-//(*sockPool).getReader : return bufio.Reader instance for use in request handler
-func (s *sockPool) getReader(c net.Conn) *bufio.Reader {
-	v := s.readerPool.Get()
-	if v == nil {
-		return bufio.NewReader(c)
-	}
-	r := v.(*bufio.Reader)
-	r.Reset(c)
-	return r
-}
-
-//(*sockPool).putReader : return bufio.Reader instance to readerPool
-func (s *sockPool) putReader(b *bufio.Reader) {
-	s.readerPool.Put(b)
 }
 
 //(*sockPool).Stop : halts all current socket workers
