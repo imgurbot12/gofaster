@@ -88,7 +88,6 @@ func (s *sockPool) listen(network, address string, handler func(*Request, *Respo
 			response = Response{
 				statusCode: 200,
 			}
-			// s.putReader(request.sBuffer.R)
 		}
 		//close connection
 		conn.Close()
