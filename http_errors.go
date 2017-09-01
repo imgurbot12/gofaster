@@ -22,7 +22,7 @@ func badRequest(resp *Response) {
 }
 
 func request404(resp *Response) {
-	resp.StatusCode(400)
+	resp.StatusCode(404)
 	resp.SetHeader("Server", "nginx")
 	resp.SetHeader("Date", GetDate())
 	resp.SetHeader("Content-Type", "text/html")
