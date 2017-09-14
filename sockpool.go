@@ -14,7 +14,7 @@ import (
 /***Variables***/
 
 //TODO: allow for http/1.0 vs http/1.1 response
-//TODO: extra requests are not handled by super fast sockets, they are handled via fasthttp.Server.serveConn
+//TODO: might want to re-modle connection handling to allow for keep-alive
 
 //sockPool : object to maintain and create socket threads to handle inbound connections
 type sockPool struct {
