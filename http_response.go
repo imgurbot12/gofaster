@@ -118,7 +118,7 @@ func (r *Response) Make(conn net.Conn) {
 		if !r.bConnClose {
 			r.tbuffer = append(r.tbuffer, "Connection"...)
 			r.tbuffer = append(r.tbuffer, ':', ' ')
-			r.tbuffer = append(r.tbuffer, "Close"...)
+			r.tbuffer = append(r.tbuffer, "close"...)
 			r.tbuffer = append(r.tbuffer, '\r', '\n')
 		}
 		// write given headers to tbuffer
