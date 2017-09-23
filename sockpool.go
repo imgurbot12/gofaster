@@ -18,7 +18,8 @@ import (
 
 //sockPool : object to maintain and create socket threads to handle inbound connections
 type sockPool struct {
-	waitGroup sync.WaitGroup // isRunning: used to stop listener threads after they have been spawned
+	listenerFunc func(string, string) (net.Listener, error)
+	waitGroup    sync.WaitGroup // isRunning: used to stop listener threads after they have been spawned
 }
 
 //cfg : tcp listener with global configuration options
@@ -41,7 +42,7 @@ func (s *sockPool) Spawn(network, address string, n int, handler func(*Request, 
 //(*sockPool).listen : spawn socket and send inbound connections to queue
 func (s *sockPool) listen(network, address string, handler func(*Request, *Response)) {
 	// open listener using config
-	ln, err := cfg.NewListener(network, address)
+	ln, err := s.listenerFunc(network, address)
 	if err != nil {
 		log.Fatalf("- Socket FAILED TO INIT! Error: %s\n", err)
 	}
