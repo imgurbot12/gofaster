@@ -5,6 +5,8 @@ import (
 	"log"
 	"net"
 	"time"
+
+	"github.com/valyala/tcplisten"
 )
 
 /***Variables***/
@@ -76,6 +78,13 @@ var allStatusCodes = map[int64][]byte{
 	511: []byte(" Network Authentication Required\r\n"),
 }
 
+//cfg : tcp listener with global configuration options
+var cfg = &tcplisten.Config{
+	ReusePort:   true,
+	DeferAccept: true,
+	FastOpen:    true,
+}
+
 /***Functions***/
 
 //GetDate : get current date date (w/ format for http requests)
@@ -98,8 +107,10 @@ func ListenAndServeTLS(address, cert, key string, handler func(*Request, *Respon
 	// spawn https listner
 	cer, err := tls.LoadX509KeyPair(cert, key)
 	if err != nil {
-		log.Fatalln("Unable load TLS-Keys! Error: %s", err.Error())
+		log.Fatalf("Unable load TLS-Keys! Error: %s\n", err.Error())
 	}
+	// set function to spawn tls listener
+	cfg.DeferAccept = false
 	lfunc := func(network, address string) (net.Listener, error) {
 		config := &tls.Config{Certificates: []tls.Certificate{cer}}
 		ln, err := cfg.NewListener(network, address)

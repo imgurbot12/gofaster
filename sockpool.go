@@ -7,8 +7,6 @@ import (
 	"net/textproto"
 	"sync"
 	"time"
-
-	"github.com/valyala/tcplisten"
 )
 
 /***Variables***/
@@ -20,13 +18,6 @@ import (
 type sockPool struct {
 	listenerFunc func(string, string) (net.Listener, error)
 	waitGroup    sync.WaitGroup // isRunning: used to stop listener threads after they have been spawned
-}
-
-//cfg : tcp listener with global configuration options
-var cfg = &tcplisten.Config{
-	ReusePort:   true,
-	DeferAccept: true,
-	FastOpen:    true,
 }
 
 /***Methods***/
