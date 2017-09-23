@@ -1,7 +1,9 @@
 package gofaster
 
 import (
+	"crypto/tls"
 	"log"
+	"net"
 	"time"
 )
 
@@ -84,7 +86,29 @@ func GetDate() string {
 //ListenAndServe : serve server FOREVER! (A Really Long Time...)
 func ListenAndServe(address string, handler func(*Request, *Response)) {
 	var n int = 10
-	sp := &sockPool{}
+	sp := &sockPool{listenerFunc: cfg.NewListener} // non https listener
+	sp.Spawn("tcp4", address, n, handler)
+	log.Printf("- Started Server: %s, with %d Workers\n", address, n)
+	sp.Wait()
+}
+
+//ListenAndServeTLS : serve server with TLS FOREVER! (A Really Long Time...)
+func ListenAndServeTLS(address, cert, key string, handler func(*Request, *Response)) {
+	var n int = 10
+	// spawn https listner
+	cer, err := tls.LoadX509KeyPair(cert, key)
+	if err != nil {
+		log.Fatalln("Unable load TLS-Keys! Error: %s", err.Error())
+	}
+	lfunc := func(network, address string) (net.Listener, error) {
+		config := &tls.Config{Certificates: []tls.Certificate{cer}}
+		ln, err := cfg.NewListener(network, address)
+		if err != nil {
+			return nil, err
+		}
+		return tls.NewListener(ln, config), nil
+	}
+	sp := &sockPool{listenerFunc: lfunc} // https listener
 	sp.Spawn("tcp4", address, n, handler)
 	log.Printf("- Started Server: %s, with %d Workers\n", address, n)
 	sp.Wait()
