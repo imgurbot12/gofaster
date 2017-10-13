@@ -70,7 +70,6 @@ func (s *sockPool) listen(network, address string, handler func(*Request, *Respo
 			err = request.parseRequest()
 			// send request to appropriate handlers
 			if err != nil {
-				log.Printf("ERROR! %-15s %s (Bad-Request)\n", request.RemoteAddr(), request.RequestURI)
 				errorHandler(400, &request, &response)
 			} else {
 				handler(&request, &response)
