@@ -65,6 +65,7 @@ func (s *sockPool) listen(network, address string, handler func(*Request, *Respo
 		// handle connection
 		if err == nil {
 			// make buffers
+			request.conn = conn
 			request.sBuffer.R = bufio.NewReader(conn)
 			// parse request
 			err = request.parseRequest()
