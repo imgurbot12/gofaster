@@ -65,7 +65,7 @@ func (e *muxEntry) match(pattern, path string) bool {
 //(*muxer).Match : match requested pattern and return the corresponding handler
 func (m *muxer) match(path string) func(*Request, *Response) {
 	// variables
-	path = strings.SplitN(path, "?", 1)[0]
+	path = strings.SplitN(path, "?", 2)[0]
 	var handler func(*Request, *Response)
 	// iterate patterns to find best result
 	for _, v := range m.entries {
