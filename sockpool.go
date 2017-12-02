@@ -11,6 +11,7 @@ import (
 
 /***Variables***/
 
+//TODO: need to reduce the number of allocations, any := or var at all is an allocation
 //TODO: allow for http/1.0 vs http/1.1 response
 //TODO: might want to re-modle connection handling to allow for keep-alive
 
@@ -51,6 +52,7 @@ func (s *sockPool) listen(network, address string, handler func(*Request, *Respo
 		//requst object reused for every request
 		request = Request{
 			sBuffer: sBuffer,
+			bbuf: make([]byte, 1024),
 		}
 		//response object reused for every request
 		response = Response{

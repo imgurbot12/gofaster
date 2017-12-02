@@ -7,14 +7,14 @@ import (
 	"net/textproto"
 	"net/url"
 	"strings"
+	"errors"
+	"github.com/davecgh/go-spew/spew"
 )
 
 /***Variables***/
-var buf = make([]byte, 1024)
 
 //Request : basic http request object
 type Request struct {
-
 	// complete data objects
 	Method     string
 	Protocol   string
@@ -22,12 +22,20 @@ type Request struct {
 	Headers    textproto.MIMEHeader
 
 	// optional data objects
-	Form  url.Values
-	Query url.Values
+	Form    url.Values
+	Query   url.Values
+	Cookies url.Values
 
 	//connection reader
 	conn    net.Conn
 	sBuffer *textproto.Reader
+
+	// buffer objects
+	bbuf   []byte
+	sbuf   string
+	index1 int
+	index2 int
+	index3 int
 }
 
 //badRequestError : custom error sent during request parsing error
@@ -115,10 +123,29 @@ func (req *Request) ParseForm() error {
 		return &badRequestError{"Not a POST Request!", req.Method}
 	}
 	// attempt to read-data
-	l, err := req.sBuffer.R.Read(buf)
+	l, err := req.sBuffer.R.Read(req.bbuf)
 	// if line is read -> parse-query
 	if err == nil {
-		req.Form, err = url.ParseQuery(string(buf[:l]))
+		req.Form, err = url.ParseQuery(string(req.bbuf[:l]))
 	}
 	return err
+}
+
+//(*Request).ParseCookies : parse cookies if cookie header exists
+func (req *Request) ParseCookies() error {
+	// check that cookie header exists
+	req.sbuf = req.Headers.Get("Cookie")
+	if req.sbuf == "" {
+		return errors.New("no cookie header")
+	}
+	for {
+		req.index1 = strings.IndexByte(req.sbuf, ';')
+		req.index2 = strings.IndexByte(req.sbuf[:req.index1], '=')
+		if req.index1 < 0 || req.index2 < 0 {
+			break
+		}
+		req.Cookies.Set(req.sbuf[:req.index2], req.sbuf[req.index2+1:req.index1])
+	}
+	spew.Dump(req.sbuf, req.Cookies)
+	return nil
 }
