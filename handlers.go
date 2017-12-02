@@ -35,6 +35,7 @@ func statFile(fname string, isdir bool) os.FileInfo {
 	return fdata
 }
 
+//walkDir : wall all files in directory in list
 func walkDir(dname string) []string {
 	//list for all found files0
 	var fileList []string
@@ -105,6 +106,7 @@ func ServeFile(fname string) func(*Request, *Response) {
 	}
 }
 
+//ServerDir : create file muxer for given directory
 func ServeDir(dname string) func(*Request, *Response) {
 	// collect stats and confirm is-dir
 	statFile(dname, true)
@@ -117,6 +119,7 @@ func ServeDir(dname string) func(*Request, *Response) {
 	return mux.ServeHTTP()
 }
 
+//StripPrefix : strip given prefix from http request (mainly used for file/directory muxers)
 func StripPrefix(prefix string, handler func(*Request, *Response)) func(*Request, *Response) {
 	// check for nil prefix
 	if prefix == "" {
