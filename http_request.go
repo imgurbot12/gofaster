@@ -134,18 +134,27 @@ func (req *Request) ParseForm() error {
 //(*Request).ParseCookies : parse cookies if cookie header exists
 func (req *Request) ParseCookies() error {
 	// check that cookie header exists
+	req.Cookies = url.Values{}
 	req.sbuf = req.Headers.Get("Cookie")
 	if req.sbuf == "" {
 		return errors.New("no cookie header")
 	}
+	// iterate cookies until all cookies are parsed
 	for {
-		req.index1 = strings.IndexByte(req.sbuf, ';')
-		req.index2 = strings.IndexByte(req.sbuf[:req.index1], '=')
-		if req.index1 < 0 || req.index2 < 0 {
-			break
+		req.index1 = strings.IndexByte(req.sbuf, '=')
+		req.index2 = strings.IndexByte(req.sbuf, ';')
+		if req.index1 > -1 {
+			if req.index2 > -1 {
+				req.Cookies.Set(req.sbuf[:req.index1], req.sbuf[req.index1+1:req.index2])
+			} else {
+				req.Cookies.Set(req.sbuf[:req.index1], req.sbuf[req.index1+1:])
+				break
+			}
+			req.sbuf = req.sbuf[req.index2+2:]
+			continue
 		}
-		req.Cookies.Set(req.sbuf[:req.index2], req.sbuf[req.index2+1:req.index1])
+		break
 	}
-	spew.Dump(req.sbuf, req.Cookies)
 	return nil
+
 }
