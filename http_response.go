@@ -47,7 +47,7 @@ func (r *Response) checkHeaders(key string) {
 func (r *Response) StatusCode(code int64) {
 	r.statusCode = code
 	// temp fix for response codes that have no body
-	if r.statusCode > 302 && r.statusCode < 300 {
+	if r.statusCode < 302 && r.statusCode > 300 {
 		r.bConnClose = true
 		r.bContentLength = true
 		r.bContentType = true
