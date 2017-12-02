@@ -8,7 +8,6 @@ import (
 	"net/url"
 	"strings"
 	"errors"
-	"github.com/davecgh/go-spew/spew"
 )
 
 /***Variables***/
