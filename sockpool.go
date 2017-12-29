@@ -41,7 +41,7 @@ func (s *sockPool) listen(network, address string, handler func(*Request, *Respo
 	defer ln.Close()
 	defer s.waitGroup.Done()
 
-	// make preaollocated variables
+	// make preallocated variables
 	var (
 		//re-used connection object
 		conn net.Conn
@@ -49,7 +49,7 @@ func (s *sockPool) listen(network, address string, handler func(*Request, *Respo
 		deadline = 5 * time.Second
 		//buffer objects reused for reading requests
 		sBuffer = &textproto.Reader{}
-		//requst object reused for every request
+		//request object reused for every request
 		request = Request{
 			sBuffer: sBuffer,
 			bbuf: make([]byte, 1024),
@@ -61,7 +61,7 @@ func (s *sockPool) listen(network, address string, handler func(*Request, *Respo
 	)
 	// pass connection to queue
 	for {
-		// accept conection and set deadline
+		// accept connection and set deadline
 		conn, err = ln.Accept()
 		conn.SetDeadline(AproxTimeNow().Add(deadline))
 		// handle connection
@@ -83,6 +83,9 @@ func (s *sockPool) listen(network, address string, handler func(*Request, *Respo
 			response = Response{
 				statusCode: 200,
 			}
+			request.Query = nil
+			request.Form = nil
+			request.Cookies = nil
 		}
 		//close connection
 		conn.Close()
